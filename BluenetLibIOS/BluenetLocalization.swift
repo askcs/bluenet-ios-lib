@@ -77,6 +77,27 @@ open class BluenetLocalization {
         }
     }
     
+    open func trackIBeacon(uuid: String, major: NSNumber, referenceId: String) {
+        if (uuid.characters.count < 30) {
+            print("BLUENET LOCALIZATION ---- Cannot track \(referenceId) with UUID \(uuid)")
+        }
+        else {
+            let trackStone = iBeaconContainer(referenceId: referenceId, uuid: uuid, major: major)
+            self.locationManager.trackBeacon(trackStone)
+        }
+    }
+    
+    open func trackIBeacon(uuid: String, major: NSNumber, minor: NSNumber, referenceId: String) {
+        if (uuid.characters.count < 30) {
+            print("BLUENET LOCALIZATION ---- Cannot track \(referenceId) with UUID \(uuid)")
+        }
+        else {
+            let trackStone = iBeaconContainer(referenceId: referenceId, uuid: uuid, major: major, minor: minor)
+            self.locationManager.trackBeacon(trackStone)
+        }
+    }
+    
+    
     
     /**
      * This can be used to have another way of resetting the enter/exit events. In certain cases (ios 10) the exitRegion event might not be fired correctly.
@@ -105,6 +126,14 @@ open class BluenetLocalization {
      */
     open func stopTrackingIBeacon(_ uuid: String) {
         self.locationManager.stopTrackingIBeacon(uuid);
+    }
+    
+    open func stopTrackingIBeacon(_ uuid: String, major: NSNumber) {
+        self.locationManager.stopTrackingIBeacon(uuid, major: major);
+    }
+    
+    open func stopTrackingIBeacon(_ uuid: String, major: NSNumber, minor: NSNumber) {
+        self.locationManager.stopTrackingIBeacon(uuid, major: major, minor: minor);
     }
     
     /**
