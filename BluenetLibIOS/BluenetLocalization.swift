@@ -38,6 +38,8 @@ open class BluenetLocalization {
     open var locationManager : LocationManager!
     var eventBus : EventBus!
     
+    var counter : Int64 = 0;
+    
     var classifier = [String: ClassifierWrapper]()
     var collectingFingerprint : Fingerprint?
     var collectingCallback : voidCallback?
@@ -69,7 +71,7 @@ open class BluenetLocalization {
      */
     open func trackIBeacon(uuid: String, referenceId: String) {
         if (uuid.characters.count < 30) {
-            print("BLUENET LOCALIZATION ---- Cannot track \(referenceId) with UUID \(uuid)")
+            Log("BLUENET LOCALIZATION ---- Cannot track \(referenceId) with UUID \(uuid)")
         }
         else {
             let trackStone = iBeaconContainer(referenceId: referenceId, uuid: uuid)
@@ -77,6 +79,7 @@ open class BluenetLocalization {
         }
     }
     
+
     open func trackIBeacon(uuid: String, major: NSNumber, referenceId: String) {
         if (uuid.characters.count < 30) {
             print("BLUENET LOCALIZATION ---- Cannot track \(referenceId) with UUID \(uuid)")
@@ -97,7 +100,13 @@ open class BluenetLocalization {
         }
     }
     
-    
+    /**
+     * This method will call requestState on every registered region.
+     */
+    open func refreshLocation() {
+        self.locationManager.refreshLocation()
+    }
+
     
     /**
      * This can be used to have another way of resetting the enter/exit events. In certain cases (ios 10) the exitRegion event might not be fired correctly.
@@ -282,6 +291,14 @@ open class BluenetLocalization {
     
     func _updateState(_ ibeaconData: Any) {
         if let data = ibeaconData as? [iBeaconPacket] {
+            // log ibeacon receiving for debugging purposes
+            if (DEBUG_LOG_ENABLED) {
+                self.counter += 1
+                LogFile("received iBeacon nr: \(self.counter) classifierState: \(indoorLocalizationEnabled) amountOfBeacons: \(data.count) activeRegionId: \(self.activeGroupId)")
+                for packet in data {
+                    LogFile("received iBeacon DETAIL \(packet.idString) \(packet.rssi) \(packet.referenceId)")
+                }
+            }
             if (data.count > 0 && self.activeGroupId != nil) {
                 // create classifiers for this group if required.
                 if (self.classifier[self.activeGroupId!] == nil) {
@@ -343,16 +360,23 @@ open class BluenetLocalization {
     
     func _handleRegionExit(_ regionId: Any) {
         if regionId is String {
+            if (DEBUG_LOG_ENABLED) {
+                Log("REGION EXIT \(regionId)")
+            }
             if (self.activeGroupId != nil) {
                 self.eventBus.emit("exitRegion", regionId)
             }
         }
         else {
+            if (DEBUG_LOG_ENABLED) {
+                Log("REGION EXIT (id not string)")
+            }
             if (self.activeGroupId != nil) {
                 self.eventBus.emit("exitRegion", self.activeGroupId!)
             }
         }
         self.activeGroupId = nil
+        
     }
     
     func _handleRegionEnter(_ regionId: Any) {
@@ -367,7 +391,18 @@ open class BluenetLocalization {
                 self.eventBus.emit("enterRegion", regionString)
             }
             self.activeGroupId = regionString
+            
+            if (DEBUG_LOG_ENABLED) {
+                Log("REGION ENTER \(regionString)")
+            }
         }
+        else {
+            if (DEBUG_LOG_ENABLED) {
+                Log("REGION ENTER region not string")
+            }
+        }
+        
+        
     }    
     
     func _evaluateData(_ data : [iBeaconPacket]) -> ClassifierResult {
