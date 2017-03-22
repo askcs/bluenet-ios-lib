@@ -114,9 +114,64 @@ open class LocationManager : NSObject, CLLocationManagerDelegate {
         
         let uuidString = uuidObject!.uuidString
         for (index, beacon) in self.trackingBeacons.enumerated() {
-            if (beacon.UUID.uuidString == uuidString) {
+            if (beacon.UUID.uuidString == uuidString && beacon.major == nil && beacon.minor == nil) {
                 self.manager!.stopRangingBeacons(in: beacon.region)
                 self.manager!.stopMonitoring(for: beacon.region)
+                targetIndex = index;
+                break
+            }
+        }
+        
+        if (targetIndex != nil) {
+            self.trackingBeacons.remove(at: targetIndex!)
+            if (self.trackingBeacons.count == 0) {
+                self.trackingState = false
+            }
+        }
+        
+    }
+    
+    open func stopTrackingIBeacon(_ uuid: String, major: NSNumber) {
+        // stop monitoring this beacon
+        var targetIndex : Int? = nil;
+        let uuidObject = UUID(uuidString : uuid)
+        if (uuidObject == nil) {
+            return
+        }
+        
+        let uuidString = uuidObject!.uuidString
+        for (index, beacon) in self.trackingBeacons.enumerated() {
+            if (beacon.UUID.uuidString == uuidString && beacon.major == major.uint16Value && beacon.minor == nil) {
+                self.manager!.stopRangingBeacons(in: beacon.region)
+                self.manager!.stopMonitoring(for: beacon.region)
+                targetIndex = index;
+                break
+            }
+        }
+        
+        if (targetIndex != nil) {
+            self.trackingBeacons.remove(at: targetIndex!)
+            if (self.trackingBeacons.count == 0) {
+                self.trackingState = false
+            }
+        }
+        
+    }
+    
+    open func stopTrackingIBeacon(_ uuid: String, major: NSNumber, minor: NSNumber) {
+        // stop monitoring this beacon
+        var targetIndex : Int? = nil;
+        let uuidObject = UUID(uuidString : uuid)
+        if (uuidObject == nil) {
+            return
+        }
+        
+        let uuidString = uuidObject!.uuidString
+        for (index, beacon) in self.trackingBeacons.enumerated() {
+            if (beacon.UUID.uuidString == uuidString && beacon.major == major.uint16Value && beacon.minor == minor.uint16Value) {
+                self.manager!.stopRangingBeacons(in: beacon.region)
+                self.manager!.stopMonitoring(for: beacon.region)
+
                 targetIndex = index;
                 break
             }
@@ -325,7 +380,7 @@ open class LocationManager : NSObject, CLLocationManagerDelegate {
     
     func _beaconInList(_ beacon: iBeaconContainer, list: [iBeaconContainer]) -> Bool {
         for element in list {
-            if (element.UUID == beacon.UUID) {
+            if (element.UUID == beacon.UUID && element.major == beacon.major && element.minor == beacon.minor) {
                 return true;
             }
         }

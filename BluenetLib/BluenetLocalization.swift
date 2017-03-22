@@ -105,6 +105,28 @@ open class BluenetLocalization {
         }
     }
     
+    // Overloads added by Meri
+    
+    open func trackIBeacon(uuid: String, major: NSNumber, referenceId: String) {
+        if (uuid.characters.count < 30) {
+            print("BLUENET LOCALIZATION ---- Cannot track \(referenceId) with UUID \(uuid)")
+        }
+        else {
+            let trackStone = iBeaconContainer(referenceId: referenceId, uuid: uuid, major: major)
+            self.locationManager.trackBeacon(trackStone)
+        }
+    }
+    
+    open func trackIBeacon(uuid: String, major: NSNumber, minor: NSNumber, referenceId: String) {
+        if (uuid.characters.count < 30) {
+            print("BLUENET LOCALIZATION ---- Cannot track \(referenceId) with UUID \(uuid)")
+        }
+        else {
+            let trackStone = iBeaconContainer(referenceId: referenceId, uuid: uuid, major: major, minor: minor)
+            self.locationManager.trackBeacon(trackStone)
+        }
+    }
+    
     /**
      * This method will call requestState on every registered region.
      */
@@ -145,6 +167,18 @@ open class BluenetLocalization {
      *  This will pause listening to any and all updates from the iBeacon tracking. Your app may fall asleep. It can be resumed by 
      *  the resumeTracking method.
      */
+    
+    // Overloads added by Meri
+    
+    open func stopTrackingIBeacon(_ uuid: String, major: NSNumber) {
+        self.locationManager.stopTrackingIBeacon(uuid, major: major);
+    }
+    
+    open func stopTrackingIBeacon(_ uuid: String, major: NSNumber, minor: NSNumber) {
+        self.locationManager.stopTrackingIBeacon(uuid, major: major, minor: minor);
+    }
+
+    
     open func pauseTracking() {
         self.locationManager.pauseTrackingIBeacons()
     }
